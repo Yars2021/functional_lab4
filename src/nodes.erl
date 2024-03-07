@@ -156,7 +156,7 @@ execute_reduce(Func, List, Pids) ->
     PackSize = get_min(list_size(Pids), list_size(List) / 2 / list_size(Pids)),
     TaskArgs = group_list(List, 2),
     execute_reduce(Func,
-                   normalize_list(execute_tasks(form_tasks_double(Func, TaskArgs), Pids, PackSize)), Pids).
+        normalize_list(execute_tasks(form_tasks_double(Func, TaskArgs), Pids, PackSize)), Pids).
 
 % Map на кластере. Func({Element}) -> Result.
 execute_map(Func, List, Pids) ->
