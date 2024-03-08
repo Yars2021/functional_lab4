@@ -23,7 +23,8 @@ calculation_test_case(ListLen, Workers, WorkersGen) ->
                nodes_gen_cluster(MapFunc, ReduceFunc, List, WorkersGen)).
 
 calculation_test() ->
+  {ok, Supervisor} = nodes_sup:start_link(),
   PidsNodes = nodes:spawn_workers(50),
-  PidsNodesGen = nodes_sup:spawn_workers(nodes_sup:start_link(), 50),
+  PidsNodesGen = nodes_sup:spawn_workers(Supervisor, 50),
   [calculation_test_case(rand:uniform(100) - 1, PidsNodes, PidsNodesGen)
    || _ <- lists:seq(1, 1000)].
