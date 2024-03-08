@@ -203,13 +203,16 @@ test(MaxLen, WorkersNum) ->
 ![image](https://github.com/Yars2021/functional_lab4/assets/79992244/874e8de5-5435-4290-b365-6b8f0f815cf3)
 
 Чтобы это подтвердить или опровергнуть, я заупстил 100 тестов разной длины на кластерах из 50 узлов.
+
 ![image](https://github.com/Yars2021/functional_lab4/assets/79992244/6da6490d-dd52-4121-9d6b-79a069224e8e)
 
 Далее я решил позапускать такие же тесты на кластерах других размеров.
 Кластер из 10 узлов:
+
 ![image](https://github.com/Yars2021/functional_lab4/assets/79992244/eec82318-733b-4af7-9b7a-b236d072f4c1)
 
 Кластер из 25 узлов:
+
 ![image](https://github.com/Yars2021/functional_lab4/assets/79992244/809ef164-b83a-4dd2-87de-e271b7dc95c8)
 
 Как видно, реализация через OTP в моем случае отработала немного медленнее, чего я на самом деле не ожидал.
