@@ -133,7 +133,7 @@ calculation_test() ->
          run_len_test/2,
          get_avg_time/2,
          test_case/3,
-         test/1]).
+         test/2]).
 
 reset_system(Workers, WorkersGen) ->
     nodes:kill_workers(Workers),
@@ -183,7 +183,7 @@ get_avg_time(List, Len) ->
     get_avg_time(List, Len, 0, 0).
 
 get_avg_time([], Len, TimeAcc, TimeGenAcc) ->
-    {TimeAcc / Len, TimeGenAcc / Len};
+    {TimeAcc div Len, TimeGenAcc div Len};
 
 get_avg_time([{{Time, _}, {TimeGen, _}} | Tail], Len, TimeAcc, TimeGenAcc) ->
     get_avg_time(Tail, Len, TimeAcc + Time, TimeGenAcc + TimeGen).
@@ -194,18 +194,21 @@ test_case(Supervisor, Workers, Len) ->
     [get_avg_time(run_len_test(Workers, Len), Len) |
      test_case(Supervisor, Workers, Len - 1)].
 
-test(MaxLen) ->
+test(MaxLen, WorkersNum) ->
     {ok, Supervisor} = nodes_sup:start_link(),
-    test_case(Supervisor, respawn_workers(Supervisor, 50), MaxLen).
+    test_case(Supervisor, respawn_workers(Supervisor, WorkersNum), MaxLen).
 ```
 
 Выполняя ручные тесты, я обратил внимание, что время работы реализации на OTP меньше, если количество узлов кластера близко к длине списка. Если же длина списка больше, реализация на стандартных процессах выигрывает:
 ![image](https://github.com/Yars2021/functional_lab4/assets/79992244/874e8de5-5435-4290-b365-6b8f0f815cf3)
 
-Чтобы это подтвердить или опровергнуть, я заупстил 100 тестов разной длины на кластерах из 50 узлов. Результат:
+Чтобы это подтвердить или опровергнуть, я заупстил 100 тестов разной длины на кластерах из 50 узлов.
 ![image](https://github.com/Yars2021/functional_lab4/assets/79992244/6da6490d-dd52-4121-9d6b-79a069224e8e)
 
 Как видно, реализация через OTP в меом случае отработала немного медленнее, чего я на самом деле не ожидал.
+В целом же зависимость времени выполнения от длины входных данных получается линейная.
+
+Далее я решил позапускать такие же тесты на кластерах других размеров.
 
 ## Выводы
 - В ходе выполнения работы я дважды реализовал простую систему управления вычислениями на кластере двумя разными способами. В первом случае я использовал стандартные процессы языка Erlang, а во втором обратился к моделям поведения gen_server и supervisor из OTP.
