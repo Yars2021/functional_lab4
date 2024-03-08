@@ -129,7 +129,11 @@ calculation_test() ->
          nodes_gen_cluster/4,
          measure_time/5,
          calculation/3,
-         run_test/2]).
+         run_test/2,
+         run_len_test/2,
+         get_avg_time/2,
+         test_case/3,
+         test/1]).
 
 reset_system(Workers, WorkersGen) ->
     nodes:kill_workers(Workers),
@@ -165,6 +169,34 @@ run_test(NumOfWorkers, ListLen) ->
     {ok, Supervisor} = nodes_sup:start_link(),
     {Workers, WorkersGen} = respawn_workers(Supervisor, NumOfWorkers),
     calculation(ListLen, Workers, WorkersGen).
+
+run_len_test({Workers, WorkersGen}, 1) ->
+    [calculation(1, Workers, WorkersGen)];
+
+run_len_test({Workers, WorkersGen}, ListLen) when ListLen > 1 ->
+    [calculation(ListLen, Workers, WorkersGen) |
+     run_len_test({Workers, WorkersGen}, ListLen - 1)];
+
+run_len_test({_, _}, _) -> [].
+
+get_avg_time(List, Len) ->
+    get_avg_time(List, Len, 0, 0).
+
+get_avg_time([], Len, TimeAcc, TimeGenAcc) ->
+    {TimeAcc / Len, TimeGenAcc / Len};
+
+get_avg_time([{{Time, _}, {TimeGen, _}} | Tail], Len, TimeAcc, TimeGenAcc) ->
+    get_avg_time(Tail, Len, TimeAcc + Time, TimeGenAcc + TimeGen).
+
+test_case(_, _, 0) -> [];
+
+test_case(Supervisor, Workers, Len) ->
+    [get_avg_time(run_len_test(Workers, Len), Len) |
+     test_case(Supervisor, Workers, Len - 1)].
+
+test(MaxLen) ->
+    {ok, Supervisor} = nodes_sup:start_link(),
+    test_case(Supervisor, respawn_workers(Supervisor, 50), MaxLen).
 ```
 
 Выполняя ручные тесты, я обратил внимание, что время работы реализации на OTP меньше, если количество узлов кластера близко к длине списка. Если же длина списка больше, реализация на стандартных процессах выигрывает:
