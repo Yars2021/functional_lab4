@@ -79,7 +79,7 @@
 
 ### Варианты реализации
 - #### Стандартные процессы Erlang
-    [Код системы управленияl](src/nodes.erl)
+    [Код системы управления](src/nodes.erl)
 
 - #### OTP: gen_server, supervisor
     [Код супервизора](src/nodes_sup.erl)
