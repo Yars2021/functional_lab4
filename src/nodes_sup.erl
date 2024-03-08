@@ -7,6 +7,7 @@
          create_node_spec/2,
          spawn_workers/2,
          kill_worker/2,
+         kill_workers/1,
          execute_task/3,
          execute_pack/2,
          get_first/2,
@@ -73,6 +74,14 @@ kill_worker(Pid, [Pid | Tail]) ->
 
 kill_worker(Pid, [Head | Tail]) ->
     [Head | kill_worker(Pid, Tail)].
+
+
+% Остановка всех исполнителей
+kill_workers([]) -> [];
+
+kill_workers([Pid | Tail]) ->
+    gen_server:stop(Pid),
+    kill_workers(Tail).
 
 
 % Посылка задачи исполнителю по Pid
