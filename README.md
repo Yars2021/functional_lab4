@@ -119,6 +119,54 @@ calculation_test() ->
 ```
 
 ### Сравнение скорости вычисления
+Для измерения времени использовался следующий код:
+```erlang
+-module(time_test).
+
+-export([reset_system/2,
+         respawn_workers/2,
+         nodes_cluster/4,
+         nodes_gen_cluster/4,
+         measure_time/5,
+         calculation/3,
+         run_test/2]).
+
+reset_system(Workers, WorkersGen) ->
+    nodes:kill_workers(Workers),
+    nodes_sup:kill_workers(WorkersGen).
+
+respawn_workers(Supervisor, N) ->
+    {nodes:spawn_workers(N), nodes_sup:spawn_workers(Supervisor, N)}.
+
+nodes_cluster(MapFunc, ReduceFunc, List, Workers) ->
+    MapResult = nodes:execute_map(MapFunc, List, Workers),
+    nodes:execute_reduce(ReduceFunc, MapResult, Workers).
+
+nodes_gen_cluster(MapFunc, ReduceFunc, List, Workers) ->
+    MapResult = nodes_sup:execute_map(MapFunc, List, Workers),
+    nodes_sup:execute_reduce(ReduceFunc, MapResult, Workers).
+
+measure_time(Workers, WorkersGen, FuncMap, FuncReduce, List) ->
+    {timer:tc(time_test, nodes_cluster, [FuncMap, FuncReduce, List, Workers]),
+     timer:tc(time_test, nodes_gen_cluster, [FuncMap, FuncReduce, List, WorkersGen])}.
+
+calculation(ListLen, Workers, WorkersGen) ->
+    MapFunc = fun({X}) ->
+                case (X < 0) of
+                  true -> -X;
+                  _ -> X
+                end
+              end,
+    ReduceFunc = fun({X, Acc}) -> X + Acc end,
+    List = [rand:uniform(50) || _ <- lists:seq(1, ListLen)],
+    time_test:measure_time(Workers, WorkersGen, MapFunc, ReduceFunc, List).
+
+run_test(NumOfWorkers, ListLen) ->
+    {ok, Supervisor} = nodes_sup:start_link(),
+    {Workers, WorkersGen} = respawn_workers(Supervisor, NumOfWorkers),
+    calculation(ListLen, Workers, WorkersGen).
+```
+
 Выполняя ручные тесты, я обратил внимание, что время работы реализации на OTP меньше, если количество узлов кластера близко к длине списка. Если же длина списка больше, реализация на стандартных процессах выигрывает:
 ![image](https://github.com/Yars2021/functional_lab4/assets/79992244/874e8de5-5435-4290-b365-6b8f0f815cf3)
 
