@@ -77,4 +77,40 @@
 
 ## Выполнение
 
+### Варианты реализации
+
+### Тестирование
+
+Для проверки правильности параллельного исполнения был использован тест:
+Каждому из вариантов реализации системы управления кластером выдавалось по 50 процессов-исполнителей и на них на 1000 случайных списков выполнялись одни и те же функции Map и Reduce.
+Совпадение результатов во всех тестах говорят о том, что работают оба варианта правильно (ну или оба одинаково неправильно, что маловероятно).
+```
+nodes_cluster(MapFunc, ReduceFunc, List, Workers) ->
+  MapResult = nodes:execute_map(MapFunc, List, Workers),
+  nodes:execute_reduce(ReduceFunc, MapResult, Workers).
+
+nodes_gen_cluster(MapFunc, ReduceFunc, List, Workers) ->
+  MapResult = nodes_sup:execute_map(MapFunc, List, Workers),
+  nodes_sup:execute_reduce(ReduceFunc, MapResult, Workers).
+
+calculation_test_case(ListLen, Workers, WorkersGen) ->
+  MapFunc = fun({X}) ->
+              case (X < 0) of
+                true -> -X;
+                _ -> X
+              end
+            end,
+  ReduceFunc = fun({X, Acc}) -> X + Acc end,
+  List = [rand:uniform(50) || _ <- lists:seq(1, ListLen)],
+  ?assertEqual(nodes_cluster(MapFunc, ReduceFunc, List, Workers),
+               nodes_gen_cluster(MapFunc, ReduceFunc, List, WorkersGen)).
+
+calculation_test() ->
+  {ok, Supervisor} = nodes_sup:start_link(),
+  PidsNodes = nodes:spawn_workers(50),
+  PidsNodesGen = nodes_sup:spawn_workers(Supervisor, 50),
+  [calculation_test_case(rand:uniform(100) - 1, PidsNodes, PidsNodesGen)
+   || _ <- lists:seq(1, 1000)].
+```
+
 ## Выводы
