@@ -26,5 +26,5 @@ calculation_test_set() ->
   Supervisor = nodes_sup:start_link(),
   PidsNodesGen = nodes_sup:spawn_workers(Supervisor, 50),
   PidsNodes = nodes:spawn_workers(50),
-  [calculation_test(rand:uniform(100) - 1 || _ <- lists:seq(1, 1000),
-                    PidsNodes, PidsNodesgen)].
+  [calculation_test(rand:uniform(100) - 1, PidsNodes, PidsNodesgen) 
+   || _ <- lists:seq(1, 1000)].
