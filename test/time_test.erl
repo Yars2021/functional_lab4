@@ -62,7 +62,7 @@ get_avg_time(List, Len) ->
 get_avg_time([], Len, TimeAcc, TimeGenAcc) ->
     {TimeAcc div Len, TimeGenAcc div Len};
 
-get_avg_time([{{Time, _}, {TimeGen, _}} | Tail], Len, TimeAcc, TimeGenAcc) ->
+get_avg_time([{{Time, Res}, {TimeGen, Res}} | Tail], Len, TimeAcc, TimeGenAcc) ->
     get_avg_time(Tail, Len, TimeAcc + Time, TimeGenAcc + TimeGen).
 
 test_case(_, _, 0) -> [];
