@@ -3,12 +3,12 @@
 -include_lib("eunit/include/eunit.hrl").
 
 nodes_cluster(MapFunc, ReduceFunc, List, Workers) ->
-  MapResult = nodes:execute_map(MapFunc, List, Pids),
-  Result = nodes:execute_reduce(ReduceFunc, MapResult, Pids).
+  MapResult = nodes:execute_map(MapFunc, List, Workers),
+  Result = nodes:execute_reduce(ReduceFunc, MapResult, Workers).
 
 nodes_gen_cluster(MapFunc, ReduceFunc, List, Workers) ->
-  MapResult = nodes_sup:execute_map(MapFunc, List, Pids),
-  Result = nodes_sup:execute_reduce(ReduceFunc, MapResult, Pids).
+  MapResult = nodes_sup:execute_map(MapFunc, List, Workers),
+  Result = nodes_sup:execute_reduce(ReduceFunc, MapResult, Workers).
 
 calculation_test(ListLen, Workers, WorkersGen) ->
   MapFunc = fun({X}) ->
